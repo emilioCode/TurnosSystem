@@ -1,0 +1,42 @@
+<div>
+  <div class="jumbotron">
+    <h1>Bienvenidos</h1>
+    <p class="lead">Si desea tomar un turno, hacer click aquí</p>
+    <p>
+      <a class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">Generar Turno &raquo;</a>&nbsp;<a class="btn btn-danger btn-lg" [routerLink]='["login"]'>Acceder &raquo;</a>
+    </p>
+  </div>
+
+  <!-- The Modal -->
+  <div class="modal" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">SOLICITUD DE TURNO</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          <div class="form-inline">
+            <div class="form-group">
+              <label> Seleccione el tipo de servicio a realizar</label>
+              <select [(ngModel)]="tipoServicio" class="form-control">
+                <option *ngFor="let service of services" value="{{ service.id }}">{{ service.tipoServicio }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button class="btn btn-primary" data-dismiss="modal" (click)="setTurno(tipoServicio)"><span class="glyphicon glyphicon-send"></span> Send</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

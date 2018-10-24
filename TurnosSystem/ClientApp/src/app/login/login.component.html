@@ -1,0 +1,250 @@
+<!--<p>
+  login works!
+</p>-->
+
+<div class="container" *ngIf="userAccount==null">
+  <h1 class="form-heading">login Form</h1>
+  <div class="login-form">
+  <div class="main-div">
+      <div class="panel">
+        
+     <h2>Login</h2>
+     <p>Introduzca su usuario y su contraseña</p>
+     </div>
+        <form id="Login" novalidate [formGroup]="formGroup" (ngSubmit)="logearse()"  >
+  
+          <div class="form-group">
+  
+  
+              <input type="text" formControlName="user" class="form-control"  placeholder="Usuario" id="user">
+  
+          </div>
+  
+          <div class="form-group">
+  
+              <input type="password"  formControlName="pwd" class="form-control" placeholder="Password">
+  
+          </div>
+          <div class="forgot">
+          <!--<a href="reset.html">Forgot password?</a>-->
+          </div>
+          <button type="submit" class="btn btn-primary" >Login</button>
+  
+        </form>
+      </div>
+
+  </div>
+</div>
+
+<div class="container" *ngIf="userAccount!=null">
+        <hr/>
+    <div class="col-md-8">
+        <h4>Bienvenido Sr(a).: {{ userAccount.nombreCompleto }}</h4>
+    </div>
+    <div class="col-md-4">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Generar Ticket</button>
+        <a  class="btn btn-danger" (click)="cerrarSesion()"><span class="glyphicon glyphicon-off"></span> Cerrar sesión</a>
+    </div>
+
+    <div class="col-md-12" *ngIf="userAccount.id==1">
+        <!--Reportes  y otros permisos-->
+        <div class="col-md-9">
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#myModalTurnosCola">Turnos en cola</button>
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#myModalTurnosPorUsuarios"(click)="getTicketsforUser()">Turnos atendidos por usuarios</button>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+<!--Start Lista-->
+    <div class="col-md-6">
+            <h3 ><span class="glyphicon glyphicon-refresh"></span> COLA DE CLIENTES POR ATENDER</h3>
+            <table class="table table-striped">
+                <thead class="table-header">
+                    <tr class="center">
+                        <td>TICKET</td>
+                        <td>ATENDER</td>
+                        <td>DESHABILITAR</td>
+                    </tr>
+                </thead>
+                <tbody>
+                   <tr *ngFor="let ticket of tickets" class="center">
+                        <ng-container *ngFor="let service of services" >
+                            <td *ngIf="service.id==ticket.tipoServicio">{{ service.codigoServicio }}-{{ ticket.turno }}</td>
+                        </ng-container>
+                        <td>
+                        <ng-container *ngFor="let service of services" >
+                            <button  *ngIf="service.id==ticket.tipoServicio" [disabled]="ticket.no!=1 || ticketsFinishesAccount.length >= 1" class="btn btn-success" (click)="atender(ticket.id,userAccount.id,service.tipoServicio)">
+                                <span class="glyphicon glyphicon-ok"></span>
+                            </button>
+                        </ng-container>
+                        </td>
+                        
+                        <td><button class="btn btn-danger" [disabled]="ticket.no!=1 || ticketsFinishesAccount.length >= 1" (click)="deshabilitar(ticket.id)">&times;</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-5">
+            <h3><span class="glyphicon glyphicon-inbox"></span> CLIENTES POR DESPACHAR</h3>
+            <table class="table table-striped">
+                <thead class="table-header">
+                    <tr>
+                        <td>TICKET</td>
+                        <td>DESPACHAR</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--<tr ng-repeat="ticket in ticketsFinishes" ng-if="ticket.usuario==userAccount.id" class="center">
+                        <td><span ng-repeat="service in servicios" ng-if="service.id==ticket.TipoServicio">{{ service.CodigoServicio }}-{{ ticket.Turno }}</span></td>
+                        <td><button ng-repeat="service in servicios" ng-if="service.id==ticket.TipoServicio" class="btn btn-success" ng-click="despachar(ticket.id)"><span class="glyphicon glyphicon-ok-sign"></span></button></td>
+                    </tr>-->
+               <!-- <ng-container *ngFor="let ticket of ticketsFinishes">
+                    <tr *ngIf="ticket.usuario==userAccount.id" class="center">
+                        <ng-container *ngFor="let service of services">
+                            <td *ngIf="service.id==ticket.TipoServicio">{{ service.codigoServicio }}-{{ ticket.turno }}</td>
+                            <td *ngIf="service.id==ticket.TipoServicio"><button class="btn btn-success" (click)="despachar(ticket.id)"><span class="glyphicon glyphicon-ok-sign"></span></button></td>
+                        </ng-container>
+                    </tr>
+                </ng-container>-->
+                <ng-container *ngFor="let ticket of ticketsFinishes">
+                    <tr  *ngIf="ticket.usuario==userAccount.id" class="center">
+                        <ng-container *ngFor="let service of services" >
+                            <td *ngIf="service.id==ticket.tipoServicio">{{ service.codigoServicio }}-{{ ticket.turno }}</td>
+                        </ng-container>
+                        <td>
+                        <ng-container *ngFor="let service of services" >
+                            <button  *ngIf="service.id==ticket.tipoServicio" class="btn btn-success" (click)="despachar(ticket.id)">
+                                <span class="glyphicon glyphicon-ok-sign"></span>
+                            </button>
+                        </ng-container>
+                        </td>
+                    </tr>
+            </ng-container>
+                </tbody>
+            </table>
+        </div>
+<!--End Lista-->
+
+</div>
+
+
+
+
+
+<!--All Modals-->
+<!-- The Modal Turnos-->
+<div class="modal" id="myModal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+    
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">SOLICITUD DE TURNO</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+    
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="form-inline">
+                <div class="form-group">
+                  <label> Seleccione el tipo de servicio a realizar</label>
+                  <select [(ngModel)]="tipoServicio" class="form-control">
+                    <option *ngFor="let service of services" value="{{ service.id }}">{{ service.tipoServicio }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+    
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button class="btn btn-primary" data-dismiss="modal" (click)="setTurno(tipoServicio)"><span class="glyphicon glyphicon-send"></span> Send</button>
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+    
+          </div>
+        </div>
+      </div>
+      <!-- Modal Turnos en Cola-->
+      <div class="modal fade" id="myModalTurnosCola" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">TURNOS EN COLA</h4>
+                </div>
+                <div class="modal-body">
+                    <div style="overflow:scroll; height:200px;">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-header">
+                                <tr>
+                                    <td>TICKET</td>
+                                    <td>FECHA</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!--<tr ng-repeat="ticket in tickets" class="center">
+                                    <td><span ng-repeat="service in servicios" ng-if="service.id==ticket.TipoServicio">{{ service.CodigoServicio }}-{{ ticket.Turno }}</span></td>
+                                    <td><span>{{ ticket.Fecha }}</span></td>
+                                </tr>-->
+                                <tr *ngFor="let ticket of tickets" class="center">
+                                    <ng-container *ngFor="let service of services">
+                                        <td *ngIf="service.id==ticket.tipoServicio">{{ service.codigoServicio }}-{{ ticket.turno }}</td>
+                                    </ng-container>
+                                    <td>{{ ticket.fecha }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- Modal Turnos atendidos por usuarios-->
+        <div class="modal fade" id="myModalTurnosPorUsuarios" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">TURNOS ATENDIDOS POR USUARIOS</h4>
+                </div>
+                <div class="modal-body">
+                    
+                    <div style="overflow:scroll; height:200px;">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-header">
+                               <tr>
+                                   <td>TURNO</td>
+                                   <td>FECHA</td>
+                                   <td>HORA INICIO</td>
+                                   <td>HORA FINAL</td>
+                                   <td>ATENDIDO POR</td>
+                               </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let ticket of TicketsforUser">
+                                    <td>{{ ticket.tipoServicio }}-{{ ticket.turno }}</td>
+                                    <td>{{ ticket.fecha }}</td>
+                                    <td>{{ ticket.hora_inicio }}</td>
+                                    <td>{{ ticket.hora_fin }}</td>
+                                    <td>{{ ticket.usuario }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
